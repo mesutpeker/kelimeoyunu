@@ -1,34 +1,33 @@
-// Global değişkenler
-let currentGame = null;
 let selectedCategory = 'english';
+let currentGame = null;
 
-// Kategori seçme fonksiyonu
+// Sesleri önceden yükle
+const sounds = {
+    background: new Audio('assets/sounds/background.mp3'),
+    correct: new Audio('assets/sounds/correct.mp3'),
+    wrong: new Audio('assets/sounds/wrong.mp3'),
+    pop: new Audio('assets/sounds/pop.mp3')
+};
+
+// Ses ayarları
+sounds.background.loop = true;
+sounds.background.volume = 0.3;
+sounds.correct.volume = 0.5;
+sounds.wrong.volume = 0.5;
+sounds.pop.volume = 0.4;
+
 function selectCategory(category) {
     selectedCategory = category;
-    const categoryButtons = document.querySelector('.category-buttons');
-    const levelButtons = document.querySelector('.level-buttons');
-    
-    // Aktif kategori butonunu vurgula
-    document.querySelectorAll('.category-button').forEach(button => {
-        if (button.textContent.toLowerCase().includes(category)) {
-            button.style.background = '#FF2D55';
-            button.style.color = 'white';
-        } else {
-            button.style.background = 'white';
-            button.style.color = '#333';
-        }
-    });
-
-    // Seviye butonlarını göster
-    categoryButtons.style.display = 'none';
-    levelButtons.style.display = 'flex';
+    sounds.pop.play().catch(err => console.log('Ses hatası:', err));
+    document.querySelector('.category-buttons').style.display = 'none';
+    document.querySelector('.level-buttons').style.display = 'flex';
 }
 
-// Oyunu başlatma fonksiyonu
 function startGame(difficulty) {
-    if (currentGame) {
-        currentGame = null;
+    if(currentGame) {
+        currentGame.stop();
     }
+    sounds.pop.play().catch(err => console.log('Ses hatası:', err));
     currentGame = new BalloonGame();
     currentGame.initialize(difficulty, selectedCategory);
 }
@@ -41,42 +40,32 @@ class BalloonGame {
         this.category = 'english';
         this.gameActive = false;
         this.currentWord = null;
-        
-        // Balon renk paletleri
-        this.colorPalettes = {
-            english: [
-                'linear-gradient(45deg, #FF61D8, #FE9090)',
-                'linear-gradient(45deg, #31D0AA, #4CAFED)',
-                'linear-gradient(45deg, #FF9500, #FFBD30)',
-                'linear-gradient(45deg, #4DD964, #62E8A0)',
-                'linear-gradient(45deg, #5856D6, #AF52DE)'
-            ],
-            turkish: [
-                'linear-gradient(45deg, #5856D6, #AF52DE)',
-                'linear-gradient(45deg, #FF2D55, #FF3B30)',
-                'linear-gradient(45deg, #007AFF, #5856D6)',
-                'linear-gradient(45deg, #FF9500, #FF2D55)',
-                'linear-gradient(45deg, #4CD964, #5AC8FA)'
-            ]
-        };
-        
-        // Zorluk seviyesi ayarları
+        this.isSoundOn = true;
+
+        // Balon renkleri
+        this.colors = [
+            '#FF61D8', '#4ECDC4', '#FFD93D', 
+            '#6C63FF', '#FF9A9E', '#FF0099',
+            '#FF3366', '#FF6B6B'
+        ];
+
+        // Zorluk seviyeleri
         this.settings = {
             easy: {
-                balloonSpeed: 12000,
-                balloonInterval: 2200,
+                balloonSpeed: 14000,
+                balloonInterval: 2500,
                 points: 5,
                 balloonSize: '90px'
             },
             medium: {
-                balloonSpeed: 10000,
-                balloonInterval: 2000,
+                balloonSpeed: 12000,
+                balloonInterval: 2200,
                 points: 8,
                 balloonSize: '85px'
             },
             hard: {
-                balloonSpeed: 8000,
-                balloonInterval: 1800,
+                balloonSpeed: 10000,
+                balloonInterval: 2000,
                 points: 10,
                 balloonSize: '80px'
             }
@@ -87,105 +76,23 @@ class BalloonGame {
         this.highScoreElement = document.getElementById('high-score-value');
         this.turkishWordElement = document.getElementById('turkish-word');
         this.startScreen = document.getElementById('start-screen');
-
-        // Olay dinleyicileri
-        window.addEventListener('resize', () => this.handleResize());
-        document.addEventListener('visibilitychange', () => this.handleVisibilityChange());
-    }
-
-    handleResize() {
-        if (this.gameActive) {
-            this.clearBalloons();
-            this.startNewRound();
-        }
-    }
-
-    handleVisibilityChange() {
-        if (document.hidden) {
-            this.gameActive = false;
-            this.clearBalloons();
-        } else if (!document.hidden && this.container.style.display === 'block') {
-            this.gameActive = true;
-            this.startNewRound();
-        }
     }
 
     createBalloon(word) {
         const balloon = document.createElement('div');
         balloon.className = 'balloon';
         balloon.textContent = word;
-        balloon.style.background = this.colorPalettes[this.category][Math.floor(Math.random() * this.colorPalettes[this.category].length)];
+        
+        const color = this.colors[Math.floor(Math.random() * this.colors.length)];
+        balloon.style.background = color;
         balloon.style.width = this.settings[this.difficulty].balloonSize;
         balloon.style.height = this.settings[this.difficulty].balloonSize;
-        
-        const minDistance = parseInt(this.settings[this.difficulty].balloonSize) + 20;
-        let left;
-        let attempts = 0;
-        const maxAttempts = 10;
-        
-        do {
-            left = Math.random() * (window.innerWidth - parseInt(this.settings[this.difficulty].balloonSize));
-            attempts++;
-        } while (attempts < maxAttempts && !this.isValidPosition(left, minDistance));
-        
-        balloon.style.left = left + 'px';
+
+        let left = Math.random() * (window.innerWidth - 100);
+        balloon.style.left = `${left}px`;
         balloon.style.top = '-100px';
         
         return balloon;
-    }
-
-    isValidPosition(left, minDistance) {
-        const balloons = document.getElementsByClassName('balloon');
-        for (let balloon of balloons) {
-            const existingLeft = parseInt(balloon.style.left);
-            if (Math.abs(existingLeft - left) < minDistance) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    showMessage(text, isSuccess) {
-        const message = document.createElement('div');
-        message.className = 'message';
-        message.textContent = text;
-        message.style.position = 'fixed';
-        message.style.top = '50%';
-        message.style.left = '50%';
-        message.style.transform = 'translate(-50%, -50%)';
-        message.style.padding = '20px 40px';
-        message.style.borderRadius = '15px';
-        message.style.fontSize = '24px';
-        message.style.fontWeight = 'bold';
-        message.style.color = 'white';
-        message.style.background = isSuccess ? 
-            'linear-gradient(45deg, #4DD964, #62E8A0)' : 
-            'linear-gradient(45deg, #FF3B30, #FF6482)';
-        message.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)';
-        message.style.zIndex = '1000';
-        
-        document.body.appendChild(message);
-        
-        setTimeout(() => {
-            message.remove();
-        }, 1000);
-    }
-
-    updateScore() {
-        this.scoreElement.textContent = this.score;
-        
-        const highScore = localStorage.getItem(`highScore_${this.category}_${this.difficulty}`) || 0;
-        if (this.score > highScore) {
-            localStorage.setItem(`highScore_${this.category}_${this.difficulty}`, this.score);
-            this.highScoreElement.textContent = this.score;
-        }
-    }
-
-    clearBalloons() {
-        const balloons = document.getElementsByClassName('balloon');
-        while (balloons.length > 0) {
-            balloons[0].remove();
-        }
     }
 
     startNewRound() {
@@ -226,9 +133,17 @@ class BalloonGame {
                         this.score += currentSettings.points;
                         this.updateScore();
                         this.showMessage('Tebrikler! 🎉', true);
+                        if (this.isSoundOn) {
+                            sounds.correct.play();
+                            sounds.pop.play();
+                        }
                         this.startNewRound();
                     } else {
                         this.showMessage('Tekrar dene! 🤔', false);
+                        if (this.isSoundOn) {
+                            sounds.wrong.play();
+                            sounds.pop.play();
+                        }
                     }
                     balloon.remove();
                 });
@@ -253,6 +168,44 @@ class BalloonGame {
         });
     }
 
+    showMessage(text, isSuccess) {
+        const message = document.createElement('div');
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px 40px;
+            border-radius: 15px;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            background: ${isSuccess ? '#4DD964' : '#FF3B30'};
+            z-index: 1000;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        `;
+        message.textContent = text;
+        
+        document.body.appendChild(message);
+        setTimeout(() => message.remove(), 1000);
+    }
+
+    updateScore() {
+        this.scoreElement.textContent = this.score;
+        const highScore = localStorage.getItem(`highScore_${this.category}_${this.difficulty}`) || 0;
+        if (this.score > highScore) {
+            localStorage.setItem(`highScore_${this.category}_${this.difficulty}`, this.score);
+            this.highScoreElement.textContent = this.score;
+        }
+    }
+
+    clearBalloons() {
+        const balloons = document.getElementsByClassName('balloon');
+        while (balloons.length > 0) {
+            balloons[0].remove();
+        }
+    }
+
     initialize(difficulty, category) {
         this.difficulty = difficulty;
         this.category = category;
@@ -265,7 +218,17 @@ class BalloonGame {
         this.startScreen.style.display = 'none';
         this.container.style.display = 'block';
         
+        if (this.isSoundOn) {
+            sounds.background.play();
+        }
+
         this.gameActive = true;
         this.startNewRound();
+    }
+
+    stop() {
+        this.gameActive = false;
+        this.clearBalloons();
+        sounds.background.pause();
     }
 }
