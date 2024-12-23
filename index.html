@@ -9,16 +9,20 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            user-select: none;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
         }
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #B7E9F7, #DBF3FA, #FED6E3, #FFDDD2);
+            background: linear-gradient(-45deg, #FF85E1, #85E5FF, #FFE485, #85FFB7);
             background-size: 400% 400%;
             animation: gradientBG 15s ease infinite;
-            overflow: hidden;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         #start-screen {
@@ -32,15 +36,12 @@
             align-items: center;
             justify-content: center;
             gap: 2rem;
-            padding: 20px;
-            background: linear-gradient(135deg, #B7E9F7, #DBF3FA, #FED6E3, #FFDDD2);
         }
 
         .game-title {
-            font-size: clamp(2.5rem, 8vw, 4rem);
-            font-weight: bold;
-            color: #FF2D55;
-            text-shadow: 3px 3px 0 rgba(0,0,0,0.1);
+            font-size: 4rem;
+            color: white;
+            text-shadow: 3px 3px 0 #FF69B4;
             text-align: center;
             margin-bottom: 2rem;
         }
@@ -48,25 +49,25 @@
         .category-buttons {
             display: flex;
             gap: 1rem;
-            margin-bottom: 2rem;
         }
 
         .category-button {
             padding: 1rem 2rem;
             font-size: 1.2rem;
-            font-weight: 600;
             border: none;
             border-radius: 15px;
-            background: white;
-            color: #333;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s;
         }
 
-        .category-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+        .category-button.english {
+            background: #4158D0;
+            color: white;
+        }
+
+        .category-button.turkish {
+            background: #FF0844;
+            color: white;
         }
 
         .level-buttons {
@@ -80,32 +81,16 @@
         .level-button {
             padding: 1rem;
             font-size: 1.2rem;
-            font-weight: 600;
             border: none;
             border-radius: 15px;
             color: white;
             cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            transition: all 0.3s;
         }
 
-        .level-button.easy {
-            background: linear-gradient(45deg, #4DD964, #62E8A0);
-        }
-
-        .level-button.medium {
-            background: linear-gradient(45deg, #FF9500, #FFBD30);
-        }
-
-        .level-button.hard {
-            background: linear-gradient(45deg, #FF3B30, #FF6482);
-        }
-
-        .level-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
+        .level-button.easy { background: #4DD964; }
+        .level-button.medium { background: #FF9500; }
+        .level-button.hard { background: #FF3B30; }
 
         #game-container {
             display: none;
@@ -125,10 +110,9 @@
 
         .score-box {
             background: white;
-            padding: 1rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            text-align: center;
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
 
         .score-label {
@@ -140,7 +124,7 @@
         .score-value {
             font-size: 1.4rem;
             font-weight: bold;
-            color: #FF2D55;
+            color: #333;
         }
 
         #turkish-word {
@@ -148,51 +132,34 @@
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
+            background: white;
             padding: 1rem 2rem;
-            font-size: clamp(1.8rem, 6vw, 2.3rem);
-            font-weight: bold;
-            color: white;
-            background: linear-gradient(45deg, #FF2D55, #FF3B30);
             border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            font-size: 1.8rem;
+            font-weight: bold;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             z-index: 100;
         }
 
         .balloon {
             position: absolute;
-            cursor: pointer;
-            padding: 1.2rem;
+            padding: 20px;
             border-radius: 50%;
-            font-size: clamp(1.1rem, 4vw, 1.5rem);
-            font-weight: bold;
             color: white;
+            text-align: center;
+            cursor: pointer;
+            user-select: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            min-width: 80px;
-            min-height: 80px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s ease;
-            animation: float 1s infinite alternate ease-in-out;
-            user-select: none;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            animation: float 1.5s infinite alternate ease-in-out;
         }
 
         @keyframes float {
             0% { transform: translateY(0); }
             100% { transform: translateY(-10px); }
-        }
-
-        @media (max-width: 768px) {
-            .category-buttons {
-                flex-direction: column;
-            }
-
-            .balloon {
-                min-width: 70px;
-                min-height: 70px;
-                padding: 1rem;
-            }
         }
     </style>
 </head>
@@ -200,8 +167,8 @@
     <div id="start-screen">
         <h1 class="game-title">Kelime Balonu</h1>
         <div class="category-buttons">
-            <button class="category-button" onclick="selectCategory('english')">İngilizce</button>
-            <button class="category-button" onclick="selectCategory('turkish')">Türkçe</button>
+            <button class="category-button english" onclick="selectCategory('english')">İngilizce</button>
+            <button class="category-button turkish" onclick="selectCategory('turkish')">Türkçe</button>
         </div>
         <div class="level-buttons">
             <button class="level-button easy" onclick="startGame('easy')">Kolay</button>
